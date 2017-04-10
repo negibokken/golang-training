@@ -10,7 +10,7 @@ func BenchmarkPopCount(b *testing.B) {
 
 func BenchmarkMyPopCount(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		PopCount(uint64(i))
+		MyPopCount(uint64(i))
 	}
 }
 
