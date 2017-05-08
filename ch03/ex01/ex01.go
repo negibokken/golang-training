@@ -22,11 +22,11 @@ func main() {
 		"width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			ax, ay, av := corner(i+1, j)
-			bx, by, bv := corner(i, j)
-			cx, cy, cv := corner(i, j+1)
-			dx, dy, dv := corner(i+1, j+1)
-			if av || bv || cv || dv {
+			ax, ay, av := corner(float64(i+1), float64(j))
+			bx, by, bv := corner(float64(i), float64(j))
+			cx, cy, cv := corner(float64(i), float64(j+1))
+			dx, dy, dv := corner(float64(i+1), float64(j+1))
+			if !av || !bv || !cv || !dv {
 				continue
 			}
 			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' />\n",
@@ -36,7 +36,7 @@ func main() {
 	fmt.Println("</svg>")
 }
 
-func corner(i, j int) (float64, float64, bool) {
+func corner(i, j float64) (float64, float64, bool) {
 	valid := true
 	x := xyrange * (float64(i)/cells - 0.5)
 	y := xyrange * (float64(j)/cells - 0.5)
