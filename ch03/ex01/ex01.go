@@ -26,7 +26,7 @@ func main() {
 			bx, by, bv := corner(float64(i), float64(j))
 			cx, cy, cv := corner(float64(i), float64(j+1))
 			dx, dy, dv := corner(float64(i+1), float64(j+1))
-			if av || bv || cv || dv {
+			if !av || !bv || !cv || !dv {
 				continue
 			}
 			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' />\n",
