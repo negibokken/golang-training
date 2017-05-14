@@ -8,7 +8,6 @@ import (
 
 func main() {
 	if len(os.Args) != 3 {
-		fmt.Println(len(os.Args))
 		fmt.Println("./ex01 <str1> <str2>")
 		os.Exit(0)
 	}
