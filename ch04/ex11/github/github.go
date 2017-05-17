@@ -13,12 +13,12 @@ type Client struct {
 // Issue GitHub Issue structure
 type Issue struct {
 	Number    int
-	HTMLURL   string `json:"html_url"`
-	Title     string
-	State     string
+	HTMLURL   string `json:"html_url,omitempty"`
+	Title     string `json:"title,omitempty"`
+	State     string `json:"state,omitempty"`
 	User      *User
-	CreatedAt time.Time `json:"created_at"`
-	Body      string    // in Markdown format
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	Body      string    `json:"body,omitempty"`
 }
 
 // User GitHub User structure
