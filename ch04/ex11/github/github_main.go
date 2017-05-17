@@ -114,7 +114,7 @@ func (c *Client) GetIssue(owner, repository, issue string) error {
 
 // EditIssue POST
 func (c *Client) EditIssue(owner, repository, issue string) error {
-	path := fmt.Sprintf("/repos/%s/%s/issues", owner, repository)
+	path := fmt.Sprintf("/repos/%s/%s/issues/%s", owner, repository, issue)
 	str, err := getStringByEditor()
 	if err != nil {
 		fmt.Println(err)
@@ -131,6 +131,7 @@ func (c *Client) EditIssue(owner, repository, issue string) error {
 		return err
 	}
 	fmt.Println("Edited Issue")
+	fmt.Println(response)
 	return nil
 }
 
