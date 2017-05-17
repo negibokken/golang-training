@@ -1,65 +1,56 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
 	"./github"
 )
 
-const usage = `
-./ex11 command -repo <repository_name> -owner <owner_name> [-issue <number>]
+const usage = `./ex11 command <repository_name> <owner_name> [<issue_number>]
 	command:
 		create
 		get
 		edit
 		close
+    Environement variable: TOKEN (GitHub token)
 `
 
 func main() {
-	r := flag.String("repo", "", "repository name")
-	o := flag.String("owner", "", "owner name")
-	i := flag.String("issue", "", "issue number")
-
-	flag.Usage = func() { fmt.Println(usage) }
-	flag.Parse()
-
-	// command := flag.Args()[0]
-	// for _, cm := range flag.Args() {
-	// 	fmt.Println(cm)
-	// }
-	// fmt.Println(command)
-	// if command == "" {
-	// 	flag.Usage()
-	// 	os.Exit(0)
-	// }
-
-	fmt.Println(*r)
-	fmt.Println(*o)
-	fmt.Println(*i)
-	command := "aaa"
-
-	fmt.Println(flag.NFlag())
-	if *i != "" && flag.NFlag() != 2 {
-		flag.Usage()
+	if len(os.Args) < 4 || len(os.Args) > 6 {
+		fmt.Println(usage)
 		os.Exit(0)
 	}
+	if os.Getenv("TOKEN") == "" {
+		fmt.Println(usage)
+		os.Exit(0)
+	}
+
+	var issue string
+	if len(os.Args) == 5 {
+		issue = os.Args[4]
+	}
+	command := os.Args[1]
+	repository := os.Args[2]
+	owner := os.Args[3]
 
 	token := os.Getenv("TOKEN")
 
 	c := github.NewClient(token)
-	r = r
-	c = c
-	o = o
 
+	var err error
 	switch command {
 	case "get":
-		// c.GetIssue()
+		err = c.GetIssue(owner, repository, issue)
 	case "create":
+		err = c.CreateIssue(owner, repository)
 	case "edit":
-
+		err = c.EditIssue(owner, repository, issue)
 	case "close":
+		err = c.CloseIssue(owner, repository, issue)
 	}
-
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
 }

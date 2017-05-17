@@ -42,7 +42,7 @@ func NewClient(token string) *Client {
 	return c
 }
 
-func (c *Client) request(path string, method string, params interface{}, response interface{}) error {
+func (c *Client) request(method string, path string, params interface{}, response interface{}) error {
 	url := APIURL + path
 
 	var body io.Reader
@@ -69,26 +69,89 @@ func (c *Client) request(path string, method string, params interface{}, respons
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return err
 	}
+
 	return nil
 }
 
 // CreateIssue POST /repos/:owner/:repo/issues
-func CreateIssue(owner, repository string) (string, error) {
+func (c *Client) CreateIssue(owner, repository string) error {
+	path := fmt.Sprintf("/repos/%s/%s/issues", owner, repository)
+	str, err := getStringByEditor()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 
-	return "hello", fmt.Errorf("Error dayo")
+	var response interface{}
+	var params interface{}
+	json.Unmarshal([]byte(str), &params)
+
+	err = c.request("POST", path, params, &response)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println("Issue is created")
+	fmt.Println(response)
+	return nil
 }
 
 // GetIssue GET
-func (c *Client) GetIssue() {
+func (c *Client) GetIssue(owner, repository, issue string) error {
+	path := fmt.Sprintf("/repos/%s/%s/issues/%s", owner, repository, issue)
+	fmt.Println(path)
+	var response interface{}
 
+	err := c.request("GET", path, nil, &response)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println("Got Issue")
+	fmt.Println(response)
+	return nil
 }
 
 // EditIssue POST
-func EditIssue() {
+func (c *Client) EditIssue(owner, repository, issue string) error {
+	path := fmt.Sprintf("/repos/%s/%s/issues", owner, repository)
+	str, err := getStringByEditor()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 
+	var response interface{}
+	var params interface{}
+	json.Unmarshal([]byte(str), &params)
+
+	err = c.request("POST", path, params, &response)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println("Edited Issue")
+	return nil
 }
 
 // CloseIssue POST
-func CloseIssue() {
+func (c *Client) CloseIssue(owner, repository, issue string) error {
+	path := fmt.Sprintf("/repos/%s/%s/issues", owner, repository)
+	str, err := getStringByEditor()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 
+	var response interface{}
+	var params interface{}
+	json.Unmarshal([]byte(str), &params)
+
+	err = c.request("POST", path, params, &response)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println("Closed Issue")
+	return nil
 }
