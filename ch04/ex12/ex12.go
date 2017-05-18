@@ -13,23 +13,22 @@ const usage = `
 `
 
 func main() {
-	comicTitle := os.Args[1]
-	if comicTitle == "" {
-		fmt.Println(usage)
-		os.Exit(0)
-	}
 	comics, err := fetchAll([]int{1, 2, 3, 4, 5}...)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		os.Exit(1)
 	}
 
-	num, comic := search(comics, comicTitle)
-	if comic == nil {
-		fmt.Printf("not found\n")
-	} else {
-		fmt.Printf("URL: %s\n", comicURL(num))
-		fmt.Printf("Title: %s\n", comic.Title)
+	var comicTitle string
+	for {
+		fmt.Scan(&comicTitle)
+		num, comic := search(comics, comicTitle)
+		if comic == nil {
+			fmt.Printf("not found\n")
+		} else {
+			fmt.Printf("URL: %s\n", comicURL(num))
+			fmt.Printf("Title: %s\n", comic.Title)
+		}
 	}
 }
 
