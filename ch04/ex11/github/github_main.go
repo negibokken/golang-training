@@ -42,6 +42,14 @@ func NewClient(token string) *Client {
 	return c
 }
 
+type GetIssueResponse struct {
+	ID      int    `json:"url"`
+	URL     string `json:"url"`
+	RepoURL string `json:"repository_url"`
+	State   string `json:"state"`
+	Title   string `json:"title"`
+}
+
 func (c *Client) request(method string, path string, params interface{}, response interface{}) error {
 	url := APIURL + path
 
@@ -69,7 +77,6 @@ func (c *Client) request(method string, path string, params interface{}, respons
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -108,13 +115,15 @@ func (c *Client) GetIssue(owner, repository, issue string) error {
 		return err
 	}
 	fmt.Println("Got Issue")
-	fmt.Println(response)
+	json.Marshal(response)
+	fmt.Printf("%#v", response)
 	return nil
 }
 
 // EditIssue POST
 func (c *Client) EditIssue(owner, repository, issue string) error {
-	path := fmt.Sprintf("/repos/%s/%s/issues", owner, repository)
+	path := fmt.Sprintf("/repos/%s/%s/issues/%s", owner, repository, issue)
+
 	str, err := getStringByEditor()
 	if err != nil {
 		fmt.Println(err)
@@ -125,7 +134,7 @@ func (c *Client) EditIssue(owner, repository, issue string) error {
 	var params interface{}
 	json.Unmarshal([]byte(str), &params)
 
-	err = c.request("POST", path, params, &response)
+	err = c.request("PATCH", path, params, &response)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -136,18 +145,13 @@ func (c *Client) EditIssue(owner, repository, issue string) error {
 
 // CloseIssue POST
 func (c *Client) CloseIssue(owner, repository, issue string) error {
-	path := fmt.Sprintf("/repos/%s/%s/issues", owner, repository)
-	str, err := getStringByEditor()
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
+	path := fmt.Sprintf("/repos/%s/%s/issues/%s", owner, repository, issue)
 
+	str := `{"state": "closed"} `
 	var response interface{}
 	var params interface{}
 	json.Unmarshal([]byte(str), &params)
-
-	err = c.request("POST", path, params, &response)
+	err := c.request("PATCH", path, params, &response)
 	if err != nil {
 		fmt.Println(err)
 		return err
