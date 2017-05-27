@@ -1,4 +1,4 @@
 #! /bin/sh
 
 go build
-./ex14
+./ex14 ~/Downloads
