@@ -38,7 +38,8 @@ func (db database) create(w http.ResponseWriter, req *http.Request) {
 	if item == "" || price == "" {
 		fmt.Fprintf(w, "invalid parameter. Exaple: /create?item=xxx&price=xxx\n")
 		return
-	} if _, ok := db[item]; ok {
+	}
+	if _, ok := db[item]; ok {
 		fmt.Fprintf(w, "%s already exists.\n", item)
 		return
 	}
