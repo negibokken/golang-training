@@ -1,3 +1,3 @@
 #! /bin/sh
 
-go test -v -bench=. **/*.go
+go test -v -bench=.
