@@ -26,7 +26,7 @@ func main() {
 		fmt.Printf("%v", err)
 		os.Exit(1)
 	}
-	fmt.Printf("%v contains of %d words, %d images", url, words, images)
+	fmt.Printf("%v contains of %d words, %d images\n", url, words, images)
 }
 
 // CountWordsAndImages count words and images
