@@ -52,8 +52,9 @@ func ElementByID(doc *html.Node, id string) *html.Node {
 		return true
 	}
 
-	post := func(n *html.Node) bool { return true }
-	forEachNode(doc, pre, post)
+	// post := func(n *html.Node) bool { return true }
+	// forEachNode(doc, pre, post)
+	forEachNode(doc, pre, nil)
 	return result
 }
 
