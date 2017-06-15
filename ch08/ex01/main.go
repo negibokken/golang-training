@@ -13,19 +13,15 @@ const usage = `./ex01 <port>
   port: port number (default 8000)
 
   Environment variable: TZ
-    ex)  TZ=Tokyo/Asia(default)
-         TZ=US/Eastern
+    ex)  TZ=Tokyo/Asia
+         TZ=US/Eastern(default)
          TZ=Europe/London
 `
 
 func main() {
-	timeZone := "Tokyo/Asia"
+	timeZone := "US/Eastern"
 	port := "8000"
-	if len(os.Args) == 0 {
-		fmt.Fprintf(os.Stderr, "%v", usage)
-		os.Exit(1)
-	}
-	if os.Args[1] != "" {
+	if len(os.Args) >= 2 {
 		port = os.Args[1]
 	}
 	if tz := os.Getenv("TZ"); tz != "" {
@@ -40,6 +36,7 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 	}
+	fmt.Printf("%s: localhost:%s listening", timeZone, port)
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
