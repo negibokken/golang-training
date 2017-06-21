@@ -1,26 +1,29 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func main() {
-	naturals := make(chan int)
-	squares := make(chan int)
+	go spinner(100 * time.Millisecond)
+	const n = 45
+	fibN := fib(n)
+	fmt.Printf("\r Fibonacci(%d) = %d\n", n, fibN)
+}
 
-	go func() {
-		for x := 0; x < 100; x++ {
-			naturals <- x
+func spinner(delay time.Duration) {
+	for {
+		for _, r := range `-||/` {
+			fmt.Printf("\r%c", r)
+			time.Sleep(delay)
 		}
-		close(naturals)
-	}()
-
-	go func() {
-		for x := range naturals {
-			squares <- x * x
-		}
-		close(squares)
-	}()
-
-	for x := range squares {
-		fmt.Println(x)
 	}
+}
+
+func fib(x int) int {
+	if x < 2 {
+		return x
+	}
+	return fib(x-1) + fib(x-2)
 }
