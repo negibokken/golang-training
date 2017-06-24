@@ -1,4 +1,4 @@
 #! /bin/sh
 
 go build
-./ex03
+./ex04
