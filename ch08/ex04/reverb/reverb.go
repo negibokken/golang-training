@@ -22,7 +22,7 @@ func main() {
 			log.Print(err)
 			continue
 		}
-		handleConn(conn)
+		go handleConn(conn)
 	}
 }
 
@@ -43,10 +43,10 @@ func handleConn(c net.Conn) {
 			time.Sleep(delay)
 			done <- struct{}{}
 		}(c, input.Text(), 1*time.Second)
+
 	}
 
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
+	wg.Wait()
+	close(done)
+
 }
