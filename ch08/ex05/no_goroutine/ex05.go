@@ -7,7 +7,6 @@ import (
 	"io"
 	"math/cmplx"
 	"os"
-	"sync"
 )
 
 var out io.Writer = os.Stdout
@@ -17,25 +16,15 @@ func main() {
 		xmin, ymin, xmax, ymax = -2, -2, +2, +2
 		width, height          = 1024, 1024
 	)
-	var wg sync.WaitGroup
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	for py := 0; py < height; py++ {
 		y := float64(py)/height*(ymax-ymin) + ymin
 		for px := 0; px < width; px++ {
-			wg.Add(1)
 			x := float64(px)/width*(xmax-xmin) + xmin
 			z := complex(x, y)
-			go func(ppx, ppy int, z complex128) {
-				defer wg.Done()
-				img.Set(ppx, ppy, mandelbrot(z))
-			}(px, py, z)
+			img.Set(px, py, mandelbrot(z))
 		}
 	}
-
-	go func() {
-		wg.Wait()
-	}()
-
 	png.Encode(out, img)
 }
 

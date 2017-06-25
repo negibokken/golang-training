@@ -1,3 +1,7 @@
 #! /bin/sh
 
-go test -v -bench=. | grep -Ev "^./ex05"
+echo "--- with goroutine ---"
+go test -v -bench=.
+cd no_goroutine
+echo "--- without goroutine ---"
+go test -v -bench=.
