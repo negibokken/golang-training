@@ -8,7 +8,7 @@ import (
 	"./links"
 )
 
-var tokens = make(chan struct{}, 20)
+var tokens = make(chan struct{}, 10)
 
 func crawl(url string) []string {
 	fmt.Println(url)
