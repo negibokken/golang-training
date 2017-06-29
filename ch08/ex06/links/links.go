@@ -84,7 +84,7 @@ func saveHTML(origin, link string) error {
 		return err
 	}
 
-	dir := filepath.Join("./", u.Host, filepath.Clean(u.Path))
+	dir := filepath.Join("./out", u.Host, filepath.Clean(u.Path))
 	base := "[content]"
 
 	err = os.MkdirAll(dir, os.ModePerm)
