@@ -1,4 +1,4 @@
 #! /bin/sh
 
-go build ex06.go
-./ex06 -depth 3 http://www.gopl.io/
+go build ex07.go
+./ex07 -depth 3 http://www.gopl.io/
