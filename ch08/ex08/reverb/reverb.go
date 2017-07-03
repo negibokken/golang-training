@@ -56,7 +56,6 @@ func handleConn(c net.Conn) {
 		case <-tick.C:
 			fmt.Println(cnt)
 			cnt++
-		default:
 		}
 		if cnt == 10 {
 			fmt.Println("connection closed")
@@ -65,7 +64,4 @@ func handleConn(c net.Conn) {
 	}
 	tick.Stop()
 	return
-	// for input.Scan() {
-	// 	echo(c, input.Text(), 1*time.Second)
-	// }
 }
