@@ -78,6 +78,7 @@ loop:
 		i := 0
 		select {
 		case size, ok := <-fileSizes[0]:
+			fmt.Println(ok)
 			if !ok {
 				break loop
 			}
