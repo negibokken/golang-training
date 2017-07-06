@@ -10,10 +10,9 @@ import (
 	"time"
 )
 
-var sema = make(chan struct{}, 20)
-
 func walkDir(dir string, n *sync.WaitGroup, fileSizes chan<- int64) {
 	defer n.Done()
+
 	for _, entry := range dirents(dir) {
 		if entry.IsDir() {
 			n.Add(1)
@@ -25,9 +24,12 @@ func walkDir(dir string, n *sync.WaitGroup, fileSizes chan<- int64) {
 	}
 }
 
+var sema = make(chan struct{}, 20)
+
 func dirents(dir string) []os.FileInfo {
 	sema <- struct{}{}
 	defer func() { <-sema }()
+
 	entries, err := ioutil.ReadDir(dir)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "du1: %v\n", err)
@@ -45,54 +47,59 @@ func main() {
 	}
 	fileSizes := make([]chan int64, len(roots))
 
-	var n sync.WaitGroup
+	var nfiles, nbytes []int64
 	for i, root := range roots {
-		n.Add(1)
 		fileSizes[i] = make(chan int64)
-		fmt.Println(i)
-		go walkDir(root, &n, fileSizes[i])
+		nfiles = append(nfiles, 0)
+		nbytes = append(nbytes, 0)
+		walkDirWrapper(root, fileSizes[i])
 	}
-
-	go func() {
-		n.Wait()
-		for i := range roots {
-			close(fileSizes[i])
-		}
-	}()
 
 	var tick <-chan time.Time
 	if *verbose {
 		tick = time.Tick(500 * time.Millisecond)
 	}
 
-	var nfiles, nbytes []int64
-	for range roots {
-		nfiles = append(nfiles, 0)
-		nbytes = append(nbytes, 0)
-	}
-
 loop:
 	for {
-		// for i, root := range roots {
-		root := roots[0]
-		i := 0
-		select {
-		case size, ok := <-fileSizes[0]:
-			fmt.Println(ok)
-			if !ok {
+		var chanCount = len(roots)
+		for i, root := range roots {
+			select {
+			case size, ok := <-fileSizes[i]:
+				if !ok {
+					break
+				}
+				nfiles[i]++
+				nbytes[i] += size
+			case <-tick:
+				printDiskUsage(root, nfiles[i], nbytes[i])
+
+			}
+
+			if _, ok := <-fileSizes[i]; !ok {
+				chanCount--
+			}
+			if chanCount == 0 {
 				break loop
 			}
-			nfiles[i]++
-			nbytes[i] += size
-		case <-tick:
-			printDiskUsage(root, nfiles[i], nbytes[i])
 		}
-		// }
 	}
-	fmt.Println("finish")
+	fmt.Println("--- results: ---")
 	for i, root := range roots {
 		printDiskUsage(root, nfiles[i], nbytes[i])
 	}
+}
+
+func walkDirWrapper(root string, fileSize chan int64) {
+	var n sync.WaitGroup
+
+	n.Add(1)
+	go walkDir(root, &n, fileSize)
+
+	go func() {
+		n.Wait()
+		close(fileSize)
+	}()
 }
 
 func printDiskUsage(root string, nfiles, nbytes int64) {
