@@ -1,44 +1,67 @@
 package main
 
 import (
-	"context"
+	"flag"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"log"
 	"os"
+
+	"./links"
 )
 
-func main() {
+var tokens = make(chan struct{}, 20)
 
-	ctx, cancelFunc := context.WithCancel(context.Background())
-
-	req, err := http.NewRequest("GET", "http://example.com", nil)
+func crawl(url string) []string {
+	tokens <- struct{}{}
+	list, err := links.Extract(url)
+	<-tokens
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
-		os.Exit(1)
+		log.Print(err)
 	}
-	req = req.WithContext(ctx)
+	return list
+}
 
-	fmt.Println("Press any key to cancel")
-	result := make(chan string)
-	go func() {
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%v", err)
-			os.Exit(1)
-		}
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "%v", err)
-			os.Exit(1)
-		}
-		result <- string(body)
-	}()
+type Data struct {
+	link  []string
+	depth int
+}
+
+func main() {
+	depth := flag.Int("depth", 1, "crawl depth")
+	flag.Parse()
+	os.Args = flag.Args()
+
+	worklist := make(chan Data)
+	n := 1
 
 	go func() {
-		os.Stdin.Read(make([]byte, 1))
-		cancelFunc()
+		for _, a := range os.Args {
+			d := Data{[]string{a}, 1}
+			worklist <- d
+		}
 	}()
 
-	fmt.Println(<-result)
+	seen := make(map[string]bool)
+	for ; n > 0; n-- {
+		list := <-worklist
+		if list.depth > *depth {
+			continue
+		}
+		fmt.Println(list)
+		for _, link := range list.link {
+
+			if links.Cancelled() {
+				return
+			}
+
+			if !seen[link] {
+				seen[link] = true
+				n++
+				go func(link string) {
+					fmt.Println("downloading", link, "contents")
+					worklist <- Data{crawl(link), list.depth + 1}
+				}(link)
+			}
+		}
+	}
 }
