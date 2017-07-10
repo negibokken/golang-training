@@ -1,0 +1,65 @@
+
+---- Number of Goroutine: 10 ----
+memory all: 0.006363 MB
+BenchmarkPipeLine10-4        	
+---- Number of Goroutine: 10 ----
+memory all: 0.006378 MB
+
+---- Number of Goroutine: 10 ----
+memory all: 0.007812 MB
+
+---- Number of Goroutine: 10 ----
+memory all: 0.019974 MB
+  500000	      2603 ns/op
+
+---- Number of Goroutine: 100 ----
+memory all: 0.054108 MB
+BenchmarkPipeLine100-4       	
+---- Number of Goroutine: 100 ----
+memory all: 0.064194 MB
+
+---- Number of Goroutine: 100 ----
+memory all: 0.056686 MB
+
+---- Number of Goroutine: 100 ----
+memory all: 0.052307 MB
+   50000	     25624 ns/op
+
+---- Number of Goroutine: 1000 ----
+memory all: 0.624542 MB
+BenchmarkPipeLine1000-4      	
+---- Number of Goroutine: 1000 ----
+memory all: 0.646606 MB
+
+---- Number of Goroutine: 1000 ----
+memory all: 0.627686 MB
+    5000	    271560 ns/op
+
+---- Number of Goroutine: 10000 ----
+memory all: 6.005547 MB
+BenchmarkPipeLine10000-4     	
+---- Number of Goroutine: 10000 ----
+memory all: 5.784370 MB
+
+---- Number of Goroutine: 10000 ----
+memory all: 6.709183 MB
+     300	   4343403 ns/op
+
+---- Number of Goroutine: 100000 ----
+memory all: 60.016945 MB
+BenchmarkPipeLine100000-4    	
+---- Number of Goroutine: 100000 ----
+memory all: 57.771156 MB
+      30	  43593783 ns/op
+
+---- Number of Goroutine: 1000000 ----
+memory all: 624.947426 MB
+BenchmarkPipeLine1000000-4   	
+---- Number of Goroutine: 1000000 ----
+memory all: 619.154121 MB
+
+---- Number of Goroutine: 1000000 ----
+memory all: 617.545502 MB
+       3	1001308293 ns/op
+PASS
+ok  	_/Users/bokken/go/workspace/golang-training/ch09/ex04	28.268s
