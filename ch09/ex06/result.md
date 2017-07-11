@@ -1,3 +1,5 @@
+## スペック
+
 ```
 % system_profiler SPHardwareDataType                                                  (git)-[master]
 Hardware:
@@ -13,8 +15,12 @@ Hardware:
       L2 Cache (per Core): 256 KB
       L3 Cache: 4 MB
       Memory: 16 GB
-```GOMAXPROCS=1
-=== RUN   Test_main
+```
+
+## 実行結果
+
+```
+GOMAXPROCS=1 === RUN   Test_main
 time: 1.30287853s
 --- PASS: Test_main (1.30s)
 PASS
@@ -37,3 +43,4 @@ time: 437.560285ms
 --- PASS: Test_main (0.44s)
 PASS
 ok  	_/Users/bokken/go/workspace/golang-training/ch09/ex06	0.468s
+```
