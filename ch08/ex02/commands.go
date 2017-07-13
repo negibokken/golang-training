@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 )
@@ -85,6 +86,27 @@ func commandPWD(c *Client) (err error) {
 	return
 }
 
+func commandCWD(c *Client, p string) (err error) {
+	// absolute path or relative path
+	if strings.HasPrefix(p, "/") {
+		if _, err = os.Stat(p); err != nil {
+			c.writeResponse("550 Requested action not taken.")
+			return
+		}
+		c.cwd = p
+		c.cwd = path.Join(c.cwd, p)
+		c.writeResponse("200 Command okay.")
+	} else {
+		if _, err = os.Stat(path.Join(c.cwd, p)); err != nil {
+			c.writeResponse("550 Requested action not taken.")
+			return
+		}
+		c.cwd = path.Join(c.cwd, p)
+		c.writeResponse("200 Command okay.")
+	}
+	return
+}
+
 func commandLIST(c *Client) (err error) {
 	files, err := ioutil.ReadDir(c.cwd)
 	if err != nil {
@@ -94,7 +116,7 @@ func commandLIST(c *Client) (err error) {
 	c.writeResponse("200 Command okay.")
 	var str string
 	for _, file := range files {
-		str += file.Name() + "\n"
+		str += "\n" + file.Name()
 	}
 	c.writeResponse(str)
 	return
@@ -105,18 +127,28 @@ func commanNLST(c *Client) (err error) {
 	return
 }
 
-func commandSITE(c *Client) (err error) {
+func commandSITE(c *Client, cmds []string) (err error) {
+	if len(cmds) == 1 {
+		_, err = exec.Command(cmds[0]).Output()
+	} else {
+		_, err = exec.Command(cmds[0], cmds[1:]...).Output()
+	}
+	if err != nil {
+		c.writeResponse("500 Syntax error, command unrecognized")
+		return
+	}
 	c.writeResponse("200 Command okay.")
 	return
 }
 
 func commandSYST(c *Client) (err error) {
+	c.writeResponse("System: FTP Server system ex02\n")
 	c.writeResponse("200 Command okay.")
 	return
 }
 
 func commandSTAT(c *Client) (err error) {
-	c.writeResponse("200 Command okay.")
+	// c.writeResponse("200 Command okay.")
 	return
 }
 

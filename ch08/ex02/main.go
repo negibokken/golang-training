@@ -51,6 +51,9 @@ func handleConn(c *Client) {
 		case "RETR":
 			// err = commandRETR(c)
 			c.writeResponse("502 Command not implemented.")
+			// CDUP 一つ上のディレクトリへ
+		case "CDUP":
+			err = commandCWD(c, "..")
 		// STOR 保存
 		case "STOR":
 			// err = commandSTOR(c)
@@ -73,14 +76,15 @@ func handleConn(c *Client) {
 		case "RNFR":
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
-				break
+				continue
 			}
+			c.writeResponse("200 Command okay.")
 			src = cmds[1]
 		// RNTO 名称変更先
 		case "RNTO":
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
-				break
+				continue
 			}
 			dst = cmds[1]
 			err = commandRNTO(c, src, dst)
@@ -93,44 +97,52 @@ func handleConn(c *Client) {
 		case "DELE":
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
-				break
+				continue
 			}
 			err = commandDELE(c, cmds[1])
 		// RMD  ディレクトリ削除
 		case "RMD":
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
-				break
+				continue
 			}
 			err = commandRMD(c, cmds[1])
 		// MKD  ディレクトリ作成
 		case "MKD":
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
-				break
+				continue
 			}
 			err = commandMKD(c, cmds[1])
 		// PWD  作業ディレクトリ表示
 		case "PWD":
 			err = commandPWD(c)
+		case "CWD":
+			if len(cmds) != 2 || cmds[1] == "" {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			err = commandCWD(c, cmds[1])
 		// LIST 一覧
 		case "LIST":
 			err = commandLIST(c)
 		// NLST 名前一覧
 		case "NLST":
-			commanNLST(c)
+			// commanNLST(c)
 			c.writeResponse("502 Command not implemented.")
 		// SITE サイト固有パラメータ
 		case "SITE":
-			err = commandSITE(c)
-			c.writeResponse("502 Command not implemented.")
+			if len(cmds) <= 1 {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			err = commandSITE(c, cmds[1:])
 		// SYST システム
 		case "SYST":
 			err = commandSYST(c)
-			c.writeResponse("502 Command not implemented.")
 		// STAT ステータス
 		case "STAT":
-			err = commandSTAT(c)
+			// err = commandSTAT(c)
 			c.writeResponse("502 Command not implemented.")
 		// HELP ヘルプ
 		case "HELP":
@@ -144,9 +156,8 @@ func handleConn(c *Client) {
 		// other
 		default:
 		}
-		// break if got error
 		if err != nil {
-			return
+			/* error process */
 		}
 	}
 }

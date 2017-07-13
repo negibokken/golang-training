@@ -1,4 +1,4 @@
 #! /bin/sh
 
 go build
-./ex02
+sudo ./ex02 ftp_home
