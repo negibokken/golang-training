@@ -41,6 +41,9 @@ func handleConn(c *Client) {
 		fmt.Printf("%v\n", cmd)
 		cmds := strings.Split(cmd, " ")
 
+		// default value
+		var fileType = "A"
+
 		if len(cmds) == 0 {
 			c.writeResponse("500 Syntax error, command unrecognized")
 			continue
@@ -51,10 +54,29 @@ func handleConn(c *Client) {
 		// RETR 取得
 		case "RETR":
 			// err = commandRETR(c)
-			c.writeResponse("502 Command not implemented.")
+			if c.dconn == nil {
+				c.writeResponse("503 Bad sequence of commands.")
+				continue
+			}
+			if len(cmds) != 2 || cmds[1] == "" {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			err = commandRETR(c, cmds[1], fileType)
 			// CDUP 一つ上のディレクトリへ
 		case "CDUP":
 			err = commandCWD(c, "..")
+		case "TYPE":
+			if len(cmds) != 2 {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			if cmds[1] == "A" {
+				fileType = "A"
+			} else if cmds[1] == "I" {
+				fileType = "I"
+			}
+			c.writeResponse("200 Command okay.")
 		case "PORT":
 			if len(cmds) != 2 {
 				c.writeResponse("500 Syntax error, command unrecognized")
@@ -68,8 +90,15 @@ func handleConn(c *Client) {
 			err = commandPORT(c, ip, port)
 		// STOR 保存
 		case "STOR":
-			// err = commandSTOR(c)
-			c.writeResponse("502 Command not implemented.")
+			if c.dconn == nil {
+				c.writeResponse("503 Bad sequence of commands.")
+				continue
+			}
+			if len(cmds) != 2 || cmds[1] == "" {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			err = commandSTOR(c, cmds[1], fileType)
 		// STOU 一時保存
 		case "STOU":
 			// err = commandSTOU(c)

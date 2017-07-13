@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"path"
@@ -10,12 +13,25 @@ import (
 	"strings"
 )
 
-func commandRETR(c *Client) (err error) {
+func commandRETR(c *Client, fileName, fileType string) (err error) {
+	file, err := os.Open(path.Join(c.cwd, fileName))
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+	f := bufio.NewReader(file)
+	io.Copy(*c.dconn, f)
 	c.writeResponse("200 Command okay.")
-	return
+	return nil
 }
 
-func commandSTOR(c *Client) (err error) {
+func commandSTOR(c *Client, fileName, fileType string) (err error) {
+	file, err := os.Create(path.Join(c.cwd, fileName))
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+	if _, err := io.Copy(file, *c.dconn); err != nil {
+		return fmt.Errorf("%v", err)
+	}
 	c.writeResponse("200 Command okay.")
 	return
 }
@@ -40,8 +56,13 @@ func parseIPPort(arg string) (ip, port string, err error) {
 }
 
 func commandPORT(c *Client, ip, port string) (err error) {
-	fmt.Println("ip:", ip)
-	fmt.Println("port:", port)
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", ip, port))
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	c.dconn = &conn
+	c.writeResponse("200 Command okay.")
 	return
 }
 
