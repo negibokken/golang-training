@@ -12,8 +12,9 @@ import (
 
 // Client is store connection and cwd
 type Client struct {
-	conn *net.Conn
-	cwd  string
+	conn  *net.Conn
+	cwd   string
+	dconn *net.Conn
 }
 
 // NewClient returns client
@@ -54,6 +55,17 @@ func handleConn(c *Client) {
 			// CDUP 一つ上のディレクトリへ
 		case "CDUP":
 			err = commandCWD(c, "..")
+		case "PORT":
+			if len(cmds) != 2 {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			ip, port, err := parseIPPort(cmds[1])
+			if err != nil {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			err = commandPORT(c, ip, port)
 		// STOR 保存
 		case "STOR":
 			// err = commandSTOR(c)

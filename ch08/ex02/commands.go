@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -16,6 +17,31 @@ func commandRETR(c *Client) (err error) {
 
 func commandSTOR(c *Client) (err error) {
 	c.writeResponse("200 Command okay.")
+	return
+}
+
+func parseIPPort(arg string) (ip, port string, err error) {
+	trimed := strings.Trim(arg, " ")
+	splited := strings.Split(trimed, ",")
+	if len(splited) != 6 {
+		return "", "", fmt.Errorf("sytax error")
+	}
+	ip = fmt.Sprintf("%s.%s.%s.%s", splited[0], splited[1], splited[2], splited[3])
+	a, err := strconv.ParseInt(splited[4], 10, 64)
+	if err != nil {
+		return "", "", fmt.Errorf("sytax error")
+	}
+	b, err := strconv.ParseInt(splited[5], 10, 64)
+	if err != nil {
+		return "", "", fmt.Errorf("sytax error")
+	}
+	port = fmt.Sprintf("%d", a*256+b)
+	return ip, port, nil
+}
+
+func commandPORT(c *Client, ip, port string) (err error) {
+	fmt.Println("ip:", ip)
+	fmt.Println("port:", port)
 	return
 }
 
