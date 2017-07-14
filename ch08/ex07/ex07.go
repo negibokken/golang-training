@@ -8,7 +8,7 @@ import (
 
 	"net/url"
 
-	"./links"
+	"github.com/negibokken/ch08/ex07/links"
 )
 
 var tokens = make(chan struct{}, 20)
