@@ -46,10 +46,10 @@ func broadcaster() {
 				cli.msg <- msg
 			}
 		case cli := <-entering:
-			clients[cli] = true
 			for cl := range clients {
 				cli.msg <- cl.user + "is online"
 			}
+			clients[cli] = true
 		case cli := <-leaving:
 			delete(clients, cli)
 			close(cli.msg)

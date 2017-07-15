@@ -40,6 +40,7 @@ func outline(stack []string, n *html.Node) {
 }
 
 func main() {
+	out.Write([]byte{})
 	doc, err := html.Parse(MyNewReader("<html><body><p>hello</p></body></html>"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)

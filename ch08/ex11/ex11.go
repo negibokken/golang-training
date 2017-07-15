@@ -36,9 +36,12 @@ func mirroredFetch(urls []string) {
 				return
 			}
 			result <- Result{fileName, n}
+			cancel <- struct{}{}
 		}(url)
 	}
 	res := <-result
+	close(result)
+	close(cancel)
 	fmt.Printf("created: %v (%v byte)", res.filename, res.n)
 }
 
