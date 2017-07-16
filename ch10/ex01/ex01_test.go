@@ -54,6 +54,7 @@ func Test_handleType(t *testing.T) {
 				t.Errorf("handleType() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			// if gotOut := errout.String(); gotOut != tt.wantOut {
 			// t.Errorf("handleType() = %v, want %v", gotOut, tt.wantOut)
 			// }
