@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"image"
 	"io"
 	"os"
@@ -33,7 +34,8 @@ func Test_handleType(t *testing.T) {
 		wantOut string
 		wantErr bool
 	}{
-		{"outType", args{"jpeg", img}, "converted to jpeg", false},
+		{"outType", args{"jpeg", img}, "converted to jpeg\n", false},
+		{"outType", args{"png", img}, "converted to png\n", false},
 	}
 
 	// Make stub
@@ -49,15 +51,14 @@ func Test_handleType(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			errout = (*os.File)(nil)
+			errout = new(bytes.Buffer)
 			if err := handleType(tt.args.outType, tt.args.img, out); (err != nil) != tt.wantErr {
 				t.Errorf("handleType() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
-			// if gotOut := errout.String(); gotOut != tt.wantOut {
-			// t.Errorf("handleType() = %v, want %v", gotOut, tt.wantOut)
-			// }
+			if gotOut := errout.(*bytes.Buffer).String(); gotOut != tt.wantOut {
+				t.Errorf("handleType() = %v, want %v", gotOut, tt.wantOut)
+			}
 		})
 	}
 }

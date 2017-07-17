@@ -17,8 +17,8 @@ func init() {
 	flag.StringVar(&outType, "type", "jpeg", "convert to jpeg ,png or gif")
 }
 
-var out = os.Stdout
-var errout = os.Stderr
+var out io.Writer = os.Stdout
+var errout io.Writer = os.Stderr
 
 func main() {
 	flag.Parse()
