@@ -36,6 +36,8 @@ func Test_handleType(t *testing.T) {
 	}{
 		{"outType", args{"jpeg", img}, "converted to jpeg\n", false},
 		{"outType", args{"png", img}, "converted to png\n", false},
+		{"outType", args{"gif", img}, "converted to gif\n", false},
+		{"outType", args{"svg", img}, "unknown type specified\n", false},
 	}
 
 	// Make stub

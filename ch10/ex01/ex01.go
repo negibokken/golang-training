@@ -44,6 +44,7 @@ func handleType(outType string, img image.Image, out io.Writer) (err error) {
 		err = toGIF(img, out)
 	default:
 		fmt.Fprintln(errout, "unknown type specified")
+		return nil
 	}
 	if err != nil {
 		fmt.Fprintf(errout, "%v", err)
