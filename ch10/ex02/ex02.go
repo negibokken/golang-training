@@ -1,11 +1,18 @@
 package main
 
-import "fmt"
+import (
+	_ "archive/tar"
+	_ "archive/zip"
+)
 
-func test() {
-	fmt.Println("test")
-}
 func main() {
-	fmt.Println("hello")
-	fmt.Println("hello")
+
+}
+
+var readZip = func() {
+
+}
+
+var readTar = func() {
+
 }
