@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	archives "github.com/negibokken/golang-training/ch10/ex02/archive"
+	archives "github.com/negibokken/golang-training/ch10/ex02"
 )
 
 type reader struct {
