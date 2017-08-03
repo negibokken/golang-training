@@ -1,9 +1,41 @@
-package main
+package arc
 
 import (
-	_ "github.com/negibokken/golang-training/ch10/ex02/archive/tar"
+	"bufio"
+	"fmt"
+	"io"
+	"os"
 )
 
-func main() {
+type format struct {
+	name, magic string
+	magicOffset int
+	reader      NewReader
+}
 
+type NewReader func(*os.File) (io.Reader, error)
+
+var formats []format
+
+func Open(file *os.File) (io.Reader, error) {
+	var found *format
+	r := bufio.NewReader(file)
+	for _, f := range formats {
+		p, err := r.Peek(f.magicOffset + len(f.magic))
+		if err != nil {
+			continue
+		}
+		if string(p[f.magicOffset:]) == f.magic {
+			found = &f
+			break
+		}
+	}
+	if found == nil {
+		return nil, fmt.Errorf("open archive: cant't determine format")
+	}
+	_, err := file.Seek(0, os.SEEK_SET)
+	if err != nil {
+		return nil, fmt.Errorf("open archive: %s", err)
+	}
+	return found.reader(file)
 }

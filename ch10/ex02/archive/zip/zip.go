@@ -48,6 +48,7 @@ func (r *reader) Read(b []byte) (int, error) {
 	return written, nil
 }
 
+// NewReader returns
 func NewReader(f *os.File) (io.Reader, error) {
 	stat, err := f.Stat()
 	if err != nil {

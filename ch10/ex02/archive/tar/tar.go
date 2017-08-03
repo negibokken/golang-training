@@ -27,7 +27,6 @@ func (r *reader) Read(b []byte) (written int, err error) {
 		b = b[n:]
 		switch err {
 		case io.EOF:
-
 			h, err := r.tarReader.Next()
 			if err != nil {
 				return written, err
