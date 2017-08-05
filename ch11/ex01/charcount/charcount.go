@@ -1,10 +1,3 @@
-// Copyright © 2016 Alan A. A. Donovan & Brian W. Kernighan.
-// License: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
-// See page 97.
-//!+
-
-// Charcount computes counts of Unicode characters.
 package charcount
 
 import (
@@ -19,9 +12,9 @@ import (
 var inr io.Reader = os.Stdin
 
 func Charcount() (map[rune]int, [5]int) {
-	counts := make(map[rune]int)    // counts of Unicode characters
-	var utflen [utf8.UTFMax + 1]int // count of lengths of UTF-8 encodings
-	invalid := 0                    // count of invalid UTF-8 characters
+	counts := make(map[rune]int)
+	var utflen [utf8.UTFMax + 1]int
+	invalid := 0
 
 	in := bufio.NewReader(inr)
 	for {
@@ -46,5 +39,3 @@ func Charcount() (map[rune]int, [5]int) {
 	}
 	return counts, utflen
 }
-
-//!-
