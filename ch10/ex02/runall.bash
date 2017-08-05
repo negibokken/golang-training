@@ -1,4 +1,7 @@
 #! /bin/sh
 
 go build
-./ex02
+echo "---- zip example --------"
+./ex02 testdata/test.zip
+echo "---- tar example --------"
+./ex02 testdata/test.tar

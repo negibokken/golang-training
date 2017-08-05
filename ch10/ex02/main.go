@@ -2,9 +2,13 @@ package main
 
 import (
 	"fmt"
-	arc "github.com/negibokken/golang-training/ch10/ex02"
-	_ "github.com/negibokken/golang-training/ch10/archive/zip"
-	_ "github.com/negibokken/golang-training/ch10/archive/tar"
+	"io"
+	"log"
+	"os"
+
+	arc "github.com/negibokken/golang-training/ch10/ex02/archive"
+	_ "github.com/negibokken/golang-training/ch10/ex02/archive/tar"
+	_ "github.com/negibokken/golang-training/ch10/ex02/archive/zip"
 )
 
 func printArchive(filename string) error {
@@ -33,7 +37,7 @@ func main() {
 		err := printArchive(filename)
 		if err != nil {
 			log.Print(err)
-			exitCode=2
+			exitCode = 2
 		}
 	}
 	os.Exit(exitCode)

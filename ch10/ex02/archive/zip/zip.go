@@ -28,6 +28,9 @@ func (r *reader) Read(b []byte) (int, error) {
 		if err != nil {
 			return 0, fmt.Errorf("read zip: %s", err)
 		}
+		if f.Mode()&os.ModeDir == 0 {
+			r.toWrite = f.Name + ":\n"
+		}
 	}
 	written := 0
 	if len(r.toWrite) > 0 {
