@@ -5,9 +5,22 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	popcount "github.com/negibokken/golang-training/ch11/ex02/popcount"
 )
 
+func countBits(words []uint64) int {
+	var num int
+	for _, word := range words {
+		num += popcount.PopCount(word)
+	}
+	return num
+}
+
 func isEqualSet(x IntSet, embededSet map[int]struct{}) bool {
+	if countBits(x.words) != len(embededSet) {
+		return false
+	}
 	var keys []int
 	for k := range embededSet {
 		keys = append(keys, k)
