@@ -67,15 +67,17 @@ func TestIntSet(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		var x IntSet
-		embededSet := make(map[int]struct{})
-		// Add nums into IntSet and embeded Set by using map
-		for _, num := range test.nums {
-			x.Add(num)
-			embededSet[num] = struct{}{}
-		}
-		if !isEqualSet(x, embededSet) {
-			t.Errorf("Finally Set is %v want, %v", x.String(), keyToString(embededSet))
-		}
+		t.Run(test.name, func(t *testing.T) {
+			var x IntSet
+			embededSet := make(map[int]struct{})
+			// Add nums into IntSet and embeded Set by using map
+			for _, num := range test.nums {
+				x.Add(num)
+				embededSet[num] = struct{}{}
+			}
+			if !isEqualSet(x, embededSet) {
+				t.Errorf("Finally Set is %v want, %v", x.String(), keyToString(embededSet))
+			}
+		})
 	}
 }
