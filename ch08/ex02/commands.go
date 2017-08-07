@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,26 +14,35 @@ import (
 )
 
 func commandRETR(c *Client, fileName, fileType string) (err error) {
+	c.dAccept()
+	c.writeResponse("150 File status okay; about to open data connection.")
 	file, err := os.Open(path.Join(c.cwd, fileName))
 	if err != nil {
-		c.writeResponse("550 File not found.")
+		c.writeResponse("500 File not found.")
+		log.Println(err)
 		return fmt.Errorf("%v", err)
 	}
-	f := bufio.NewReader(file)
-	io.Copy(c.dconn, f)
-	c.writeResponse("200 Command okay.")
+	if _, err := io.Copy(c.dconn, file); err != nil {
+		log.Println(err)
+		return fmt.Errorf("%v", err)
+	}
+	c.dClose("RETR")
 	return nil
 }
 
 func commandSTOR(c *Client, fileName, fileType string) (err error) {
+	c.dAccept()
+	c.writeResponse("150 File status okay; about to open data connection.")
 	file, err := os.Create(path.Join(c.cwd, fileName))
 	if err != nil {
+		log.Println(err)
 		return fmt.Errorf("%v", err)
 	}
 	if _, err := io.Copy(file, c.dconn); err != nil {
+		log.Println(err)
 		return fmt.Errorf("%v", err)
 	}
-	c.writeResponse("200 Command okay.")
+	c.dClose("STOR")
 	return
 }
 
@@ -69,15 +77,14 @@ func commandPORT(c *Client, ip, port string) (err error) {
 }
 
 func commandPASV(c *Client) (err error) {
-	listener, err := net.Listen("tcp", "localhost:12345")
-	c.writeResponse("227 Entering Passive Mode (127,0,0,1,48,57).")
-	conn, err := listener.Accept()
-	if err != nil {
-		log.Printf("%v\n", err)
-		conn.Close()
-		return
+	if c.dlistener == nil {
+		listener, err := net.Listen("tcp", "localhost:12345")
+		if err != nil {
+			return err
+		}
+		c.dlistener = listener
 	}
-	c.dconn = conn
+	c.writeResponse("227 Entering Passive Mode (127,0,0,1,48,57).")
 	return
 }
 
@@ -169,6 +176,8 @@ func commandCWD(c *Client, p string) (err error) {
 }
 
 func commandLIST(c *Client) (err error) {
+	c.dAccept()
+	c.writeResponse("150 File status okay; about to open data connection.")
 	files, err := ioutil.ReadDir(c.cwd)
 	if err != nil {
 		c.writeResponse("550 Requested action not taken.")
@@ -181,11 +190,9 @@ func commandLIST(c *Client) (err error) {
 			str += "\n"
 		}
 	}
-
 	log.Println(str)
-	c.writeResponse("150 File status okay; about to open data connection.")
 	c.writeDResponse(str)
-	c.dClose()
+	c.dClose("LIST")
 	return
 }
 

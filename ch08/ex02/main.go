@@ -12,10 +12,11 @@ import (
 
 // Client is store connection and cwd
 type Client struct {
-	conn  *net.Conn
-	cwd   string
-	dconn net.Conn
-	mode  string
+	conn      *net.Conn
+	cwd       string
+	dconn     net.Conn
+	dlistener net.Listener
+	mode      string
 }
 
 // NewClient returns client
@@ -25,6 +26,7 @@ func NewClient(conn *net.Conn, cwd string) (c *Client) {
 	c.cwd = cwd
 	c.mode = "PASV"
 	c.dconn = nil
+	c.dlistener = nil
 	return c
 }
 
@@ -36,9 +38,19 @@ func (c *Client) writeDResponse(res string) {
 	fmt.Fprintf(c.dconn, "%v\n", res)
 }
 
-func (c *Client) dClose() {
+func (c *Client) dAccept() {
+	conn, err := c.dlistener.Accept()
+	if err != nil {
+		log.Printf("%v\n", err)
+		conn.Close()
+		return
+	}
+	c.dconn = conn
+}
+
+func (c *Client) dClose(cmd string) {
+	c.writeResponse(fmt.Sprintf("226 Closing data connection. %s successful", cmd))
 	c.dconn.Close()
-	c.writeResponse("226 Closing data connection. List successful")
 }
 
 func handleConn(c *Client) {
@@ -72,11 +84,6 @@ func handleConn(c *Client) {
 			c.writeResponse("230 Login successful.")
 		// RETR 取得
 		case "RETR":
-			// err = commandRETR(c)
-			if c.dconn == nil {
-				c.writeResponse("503 Bad sequence of commands.")
-				continue
-			}
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
 				continue
@@ -111,10 +118,6 @@ func handleConn(c *Client) {
 			commandPASV(c)
 		// STOR 保存
 		case "STOR":
-			if c.dconn == nil {
-				c.writeResponse("503 Bad sequence of commands.")
-				continue
-			}
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
 				continue
