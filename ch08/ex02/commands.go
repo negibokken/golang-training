@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -16,10 +17,11 @@ import (
 func commandRETR(c *Client, fileName, fileType string) (err error) {
 	file, err := os.Open(path.Join(c.cwd, fileName))
 	if err != nil {
+		c.writeResponse("550 File not found.")
 		return fmt.Errorf("%v", err)
 	}
 	f := bufio.NewReader(file)
-	io.Copy(*c.dconn, f)
+	io.Copy(c.dconn, f)
 	c.writeResponse("200 Command okay.")
 	return nil
 }
@@ -29,7 +31,7 @@ func commandSTOR(c *Client, fileName, fileType string) (err error) {
 	if err != nil {
 		return fmt.Errorf("%v", err)
 	}
-	if _, err := io.Copy(file, *c.dconn); err != nil {
+	if _, err := io.Copy(file, c.dconn); err != nil {
 		return fmt.Errorf("%v", err)
 	}
 	c.writeResponse("200 Command okay.")
@@ -61,8 +63,21 @@ func commandPORT(c *Client, ip, port string) (err error) {
 		fmt.Println(err)
 		return err
 	}
-	c.dconn = &conn
+	c.dconn = conn
 	c.writeResponse("200 Command okay.")
+	return
+}
+
+func commandPASV(c *Client) (err error) {
+	listener, err := net.Listen("tcp", "localhost:12345")
+	c.writeResponse("227 Entering Passive Mode (127,0,0,1,48,57).")
+	conn, err := listener.Accept()
+	if err != nil {
+		log.Printf("%v\n", err)
+		conn.Close()
+		return
+	}
+	c.dconn = conn
 	return
 }
 
@@ -128,8 +143,7 @@ func commandMKD(c *Client, dir string) (err error) {
 }
 
 func commandPWD(c *Client) (err error) {
-	c.writeResponse("200 Command okay.")
-	c.writeResponse(fmt.Sprintf("%s", c.cwd))
+	c.writeResponse(fmt.Sprintf("257 \"%s\" created.", c.cwd))
 	return
 }
 
@@ -160,12 +174,18 @@ func commandLIST(c *Client) (err error) {
 		c.writeResponse("550 Requested action not taken.")
 		return
 	}
-	c.writeResponse("200 Command okay.")
 	var str string
-	for _, file := range files {
-		str += "\n" + file.Name()
+	for i, file := range files {
+		str += " " + file.Name()
+		if i%5 == 4 {
+			str += "\n"
+		}
 	}
-	c.writeResponse(str)
+
+	log.Println(str)
+	c.writeResponse("150 File status okay; about to open data connection.")
+	c.writeDResponse(str)
+	c.dClose()
 	return
 }
 
@@ -189,8 +209,7 @@ func commandSITE(c *Client, cmds []string) (err error) {
 }
 
 func commandSYST(c *Client) (err error) {
-	c.writeResponse("System: FTP Server system ex02\n")
-	c.writeResponse("200 Command okay.")
+	c.writeResponse("215 UNIX system type.")
 	return
 }
 

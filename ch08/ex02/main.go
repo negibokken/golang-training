@@ -14,7 +14,8 @@ import (
 type Client struct {
 	conn  *net.Conn
 	cwd   string
-	dconn *net.Conn
+	dconn net.Conn
+	mode  string
 }
 
 // NewClient returns client
@@ -22,6 +23,8 @@ func NewClient(conn *net.Conn, cwd string) (c *Client) {
 	c = new(Client)
 	c.conn = conn
 	c.cwd = cwd
+	c.mode = "PASV"
+	c.dconn = nil
 	return c
 }
 
@@ -29,16 +32,24 @@ func (c *Client) writeResponse(res string) {
 	fmt.Fprintf(*c.conn, "%v\n", res)
 }
 
+func (c *Client) writeDResponse(res string) {
+	fmt.Fprintf(c.dconn, "%v\n", res)
+}
+
+func (c *Client) dClose() {
+	c.dconn.Close()
+	c.writeResponse("226 Closing data connection. List successful")
+}
+
 func handleConn(c *Client) {
-	fmt.Println("A client connected")
-	fmt.Fprintf(*c.conn, "Connected to FTP server\n")
+	log.Println("A client connected")
 
+	c.writeResponse("220 Ready.")
 	scanner := bufio.NewScanner(*c.conn)
-
 	var src, dst string
 	for scanner.Scan() {
 		cmd := scanner.Text()
-		fmt.Printf("%v\n", cmd)
+		log.Printf("%v\n", cmd)
 		cmds := strings.Split(cmd, " ")
 
 		// default value
@@ -49,8 +60,16 @@ func handleConn(c *Client) {
 			continue
 		}
 
+		upperCMD := strings.ToUpper(cmds[0])
 		var err error
-		switch cmds[0] {
+		switch upperCMD {
+		// USER 設定
+		case "USER":
+			if len(cmds) != 2 {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			c.writeResponse("230 Login successful.")
 		// RETR 取得
 		case "RETR":
 			// err = commandRETR(c)
@@ -88,6 +107,8 @@ func handleConn(c *Client) {
 				continue
 			}
 			err = commandPORT(c, ip, port)
+		case "PASV":
+			commandPASV(c)
 		// STOR 保存
 		case "STOR":
 			if c.dconn == nil {
@@ -196,6 +217,7 @@ func handleConn(c *Client) {
 			err = commandNOOP(c)
 		// other
 		default:
+			c.writeResponse(fmt.Sprintf("502 Command %q not implemented.", cmds[0]))
 		}
 		if err != nil {
 			/* error process */
@@ -214,7 +236,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return
 	}
-	fmt.Printf("HOME is set in %v\n", absHome)
+	log.Printf("HOME is set in %v\n", absHome)
 	listener, err := net.Listen("tcp", "localhost:21")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
