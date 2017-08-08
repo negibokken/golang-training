@@ -13,35 +13,55 @@ import (
 	"strings"
 )
 
+func exists(c *Client, fileName, cmd string) bool {
+	var err error
+	if cmd == "RETR" {
+		_, err = os.Stat(fileName)
+	} else {
+		_, err = os.Stat(path.Join(c.cwd, fileName))
+	}
+	return err == nil
+}
+
 func commandRETR(c *Client, fileName, fileType string) (err error) {
 	c.dAccept()
-	c.writeResponse("150 File status okay; about to open data connection.")
+	if exists(c, fileName, "RETR") {
+		c.writeResponse("550 File already exist.")
+		return fmt.Errorf("File already exist")
+	}
 	file, err := os.Open(path.Join(c.cwd, fileName))
 	if err != nil {
-		c.writeResponse("500 File not found.")
-		log.Println(err)
+		c.writeResponse("550 File not found.")
 		return fmt.Errorf("%v", err)
 	}
 	if _, err := io.Copy(c.dconn, file); err != nil {
-		log.Println(err)
+		c.writeResponse("550 File not copied.")
+		log.Println("bbb", err)
 		return fmt.Errorf("%v", err)
 	}
+	c.writeResponse("150 File status okay; about to open data connection.")
 	c.dClose("RETR")
 	return nil
 }
 
 func commandSTOR(c *Client, fileName, fileType string) (err error) {
 	c.dAccept()
-	c.writeResponse("150 File status okay; about to open data connection.")
+	if exists(c, fileName, "STOR") {
+		c.writeResponse("550 File already exist.")
+		return fmt.Errorf("File already exist")
+	}
 	file, err := os.Create(path.Join(c.cwd, fileName))
 	if err != nil {
+		c.writeResponse("550 File not found.")
 		log.Println(err)
 		return fmt.Errorf("%v", err)
 	}
 	if _, err := io.Copy(file, c.dconn); err != nil {
+		c.writeResponse("550 File not copied.")
 		log.Println(err)
 		return fmt.Errorf("%v", err)
 	}
+	c.writeResponse("150 File status okay; about to open data connection.")
 	c.dClose("STOR")
 	return
 }
@@ -66,12 +86,16 @@ func parseIPPort(arg string) (ip, port string, err error) {
 }
 
 func commandPORT(c *Client, ip, port string) (err error) {
+	c.ip = ip
+	c.port = port
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", ip, port))
 	if err != nil {
+		c.writeResponse("500 fail to create a connection.")
 		fmt.Println(err)
 		return err
 	}
 	c.dconn = conn
+	c.mode = "PORT"
 	c.writeResponse("200 Command okay.")
 	return
 }
@@ -84,6 +108,7 @@ func commandPASV(c *Client) (err error) {
 		}
 		c.dlistener = listener
 	}
+	c.mode = "PASV"
 	c.writeResponse("227 Entering Passive Mode (127,0,0,1,48,57).")
 	return
 }
@@ -145,12 +170,16 @@ func commandMKD(c *Client, dir string) (err error) {
 		c.writeResponse("550 Requested action not taken.")
 		return
 	}
-	c.writeResponse("200 Command okay.")
+	c.writeResponse(fmt.Sprintf("257 \"%s\" created.", dir))
 	return
 }
 
 func commandPWD(c *Client) (err error) {
 	c.writeResponse(fmt.Sprintf("257 \"%s\" created.", c.cwd))
+	return
+}
+
+func commandSTRU(c *Client) (err error) {
 	return
 }
 
@@ -187,7 +216,7 @@ func commandLIST(c *Client) (err error) {
 	for i, file := range files {
 		str += " " + file.Name()
 		if i%5 == 4 {
-			str += "\n"
+			str += "\r\n"
 		}
 	}
 	log.Println(str)
@@ -197,7 +226,23 @@ func commandLIST(c *Client) (err error) {
 }
 
 func commanNLST(c *Client) (err error) {
-	c.writeResponse("200 Command okay.")
+	c.dAccept()
+	c.writeResponse("150 File status okay; about to open data connection.")
+	files, err := ioutil.ReadDir(c.cwd)
+	if err != nil {
+		c.writeResponse("550 Requested action not taken.")
+		return
+	}
+	var str string
+	for i, file := range files {
+		str += " " + file.Name()
+		if i%5 == 4 {
+			str += "\r\n"
+		}
+	}
+	log.Println(str)
+	c.writeDResponse(str)
+	c.dClose("NLST")
 	return
 }
 
@@ -251,7 +296,7 @@ func commandHELP(c *Client) (err error) {
 		"QUIT",
 		"NOOP",
 	}
-	c.writeResponse(strings.Join(commands, "\n"))
+	c.writeResponse(strings.Join(commands, "\r\n"))
 	return
 }
 

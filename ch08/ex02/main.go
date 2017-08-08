@@ -17,6 +17,8 @@ type Client struct {
 	dconn     net.Conn
 	dlistener net.Listener
 	mode      string
+	ip        string
+	port      string
 }
 
 // NewClient returns client
@@ -31,26 +33,39 @@ func NewClient(conn *net.Conn, cwd string) (c *Client) {
 }
 
 func (c *Client) writeResponse(res string) {
-	fmt.Fprintf(*c.conn, "%v\n", res)
+	fmt.Fprintf(*c.conn, "%v\r\n", res)
 }
 
 func (c *Client) writeDResponse(res string) {
-	fmt.Fprintf(c.dconn, "%v\n", res)
+	fmt.Fprintf(c.dconn, "%v\r\n", res)
 }
 
 func (c *Client) dAccept() {
-	conn, err := c.dlistener.Accept()
-	if err != nil {
-		log.Printf("%v\n", err)
-		conn.Close()
-		return
+	if c.mode == "PASV" {
+		conn, err := c.dlistener.Accept()
+		if err != nil {
+			log.Printf("%v\r\n", err)
+			conn.Close()
+			return
+		}
+		c.dconn = conn
+	} else {
+		// conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", c.ip, c.port))
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+		// c.dconn = conn
 	}
-	c.dconn = conn
 }
 
 func (c *Client) dClose(cmd string) {
-	c.writeResponse(fmt.Sprintf("226 Closing data connection. %s successful", cmd))
-	c.dconn.Close()
+	if c.mode == "PASV" {
+		c.writeResponse(fmt.Sprintf("226 Closing data connection. %s successful", cmd))
+		c.dconn.Close()
+	} else {
+		c.writeResponse(fmt.Sprintf("226 Closing data connection. %s successful", cmd))
+		c.dconn.Close()
+	}
 }
 
 func handleConn(c *Client) {
@@ -182,6 +197,8 @@ func handleConn(c *Client) {
 		// PWD  作業ディレクトリ表示
 		case "PWD":
 			err = commandPWD(c)
+		case "STRU":
+			err = commandSTRU(c)
 		case "CWD":
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
@@ -193,8 +210,7 @@ func handleConn(c *Client) {
 			err = commandLIST(c)
 		// NLST 名前一覧
 		case "NLST":
-			// commanNLST(c)
-			c.writeResponse("502 Command not implemented.")
+			commanNLST(c)
 		// SITE サイト固有パラメータ
 		case "SITE":
 			if len(cmds) <= 1 {
@@ -230,7 +246,7 @@ func handleConn(c *Client) {
 
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "./ex02 <ftp_home_dir>")
+		fmt.Fprintf(os.Stderr, "./ftpd <ftp_home_dir>")
 		return
 	}
 	home := os.Args[1]
@@ -242,7 +258,7 @@ func main() {
 	log.Printf("HOME is set in %v\n", absHome)
 	listener, err := net.Listen("tcp", "localhost:21")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		return
 	}
 	for {
