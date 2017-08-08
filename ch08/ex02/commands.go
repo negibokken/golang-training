@@ -34,18 +34,19 @@ func commandRETR(c *Client, fileName, fileType string) (err error) {
 		c.writeResponse("550 File not found.")
 		return fmt.Errorf("%v", err)
 	}
+	c.writeResponse("150 File status okay; about to open data connection.")
 	if _, err := io.Copy(c.dconn, file); err != nil {
 		c.writeResponse("550 File not copied.")
 		log.Println("bbb", err)
 		return fmt.Errorf("%v", err)
 	}
-	c.writeResponse("150 File status okay; about to open data connection.")
 	c.dClose("RETR")
 	return nil
 }
 
 func commandSTOR(c *Client, fileName, fileType string) (err error) {
 	c.dAccept()
+	c.writeResponse("150 File status okay; about to open data connection.")
 	if exists(c, fileName, "STOR") {
 		c.writeResponse("550 File already exist.")
 		return fmt.Errorf("File already exist")
@@ -57,11 +58,10 @@ func commandSTOR(c *Client, fileName, fileType string) (err error) {
 		return fmt.Errorf("%v", err)
 	}
 	if _, err := io.Copy(file, c.dconn); err != nil {
-		c.writeResponse("550 File not copied.")
 		log.Println(err)
+		c.writeResponse("550 File not copied.")
 		return fmt.Errorf("%v", err)
 	}
-	c.writeResponse("150 File status okay; about to open data connection.")
 	c.dClose("STOR")
 	return
 }

@@ -49,12 +49,6 @@ func (c *Client) dAccept() {
 			return
 		}
 		c.dconn = conn
-	} else {
-		// conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", c.ip, c.port))
-		// if err != nil {
-		// 	fmt.Println(err)
-		// }
-		// c.dconn = conn
 	}
 }
 
