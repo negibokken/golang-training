@@ -225,7 +225,15 @@ func handleConn(c *Client) {
 			err = commandCWD(c, cmds[1])
 		// LIST 一覧
 		case "LIST":
-			err = commandLIST(c, fileType)
+			var filename string
+			if len(cmds) < 2 {
+				filename = ""
+			} else if strings.HasPrefix(cmds[1], "-") {
+				filename = ""
+			} else {
+				filename = cmds[1]
+			}
+			err = commandLIST(c, filename, fileType)
 		// NLST 名前一覧
 		case "NLST":
 			commanNLST(c)

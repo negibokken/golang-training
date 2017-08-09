@@ -40,7 +40,6 @@ func commandRETR(c *Client, fileName, fileType string) (err error) {
 	if fileType == "I" {
 		if _, err := io.Copy(c.dconn, file); err != nil {
 			c.writeResponse("550 File not copied.")
-			log.Println("bbb", err)
 			return fmt.Errorf("%v", err)
 		}
 	} else {
@@ -225,28 +224,63 @@ func commandCWD(c *Client, p string) (err error) {
 
 func endLine(fileType string) string {
 	if fileType == "I" {
-		return "\r\n"
+		return "\n"
 	}
-	return "\n"
+	return "\r\n"
 }
 
-func commandLIST(c *Client, fileType string) (err error) {
+func commandLIST(c *Client, filename, fileType string) (err error) {
 	c.dAccept()
 	c.writeResponse("150 File status okay; about to open data connection.")
-	files, err := ioutil.ReadDir(c.cwd)
-	if err != nil {
-		c.writeResponse("550 Requested action not taken.")
-		return
+	if filename == "" {
+		files, err := ioutil.ReadDir(c.cwd)
+		if err != nil {
+			c.writeResponse("550 Requested action not taken.")
+			return err
+		}
+		var str string
+		for _, file := range files {
+			str += file.Name() + endLine(fileType)
+		}
+		log.Println(str)
+		c.writeDResponse(str)
+		c.dClose("LIST")
+		return err
 	}
-	var str string
-	for _, file := range files {
-		log.Println(fileType)
-		str += " " + file.Name() + endLine(fileType)
-	}
-	log.Println(str)
-	c.writeDResponse(str)
-	c.dClose("LIST")
 	return
+	// -------------
+	// log.Println(fileType)
+	// file, err := os.Open(path.Join(c.cwd, filename))
+	// if err != nil {
+	// 	c.writeResponse("550 File not found.")
+	// 	return
+	// }
+	// stat, err := file.Stat()
+	// if err != nil {
+	// 	c.writeResponse("450 Requested file action not taken. File unavailable.")
+	// }
+	// if stat.IsDir() {
+	// 	filenames, err := file.Readdirnames(0)
+	// 	if err != nil {
+	// 		c.writeResponse("550 Can't read directory.")
+	// 		return err
+	// 	}
+	// 	for _, f := range filenames {
+	// 		_, err = fmt.Fprint(c.dconn, f, endLine(fileType))
+	// 		if err != nil {
+	// 			c.writeResponse("426 Connection closed: transfer aborted.")
+	// 			return err
+	// 		}
+	// 	}
+	// } else {
+	// 	_, err = fmt.Fprint(c.dconn, filename, endLine(fileType))
+	// 	if err != nil {
+	// 		c.writeResponse("426 Connection closed: transfer aborted.")
+	// 		return err
+	// 	}
+	// }
+	// c.dClose("LIST")
+	// return
 }
 
 func commanNLST(c *Client) (err error) {
