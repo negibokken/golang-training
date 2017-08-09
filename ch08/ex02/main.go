@@ -17,6 +17,8 @@ type Client struct {
 	dconn     net.Conn
 	dlistener net.Listener
 	mode      string
+	smode     string
+	stru      string
 	ip        string
 	port      string
 }
@@ -27,6 +29,8 @@ func NewClient(conn *net.Conn, cwd string) (c *Client) {
 	c.conn = conn
 	c.cwd = cwd
 	c.mode = "PASV"
+	c.smode = "S"
+	c.stru = "FILE"
 	c.dconn = nil
 	c.dlistener = nil
 	return c
@@ -188,11 +192,31 @@ func handleConn(c *Client) {
 				continue
 			}
 			err = commandMKD(c, cmds[1])
+		case "MODE":
+			if len(cmds) != 2 || cmds[1] == "" {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			if cmds[1] != "B" && cmds[1] != "C" && cmds[1] != "S" {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			c.smode = cmds[1]
+			c.writeResponse("200 Command okay.")
 		// PWD  作業ディレクトリ表示
 		case "PWD":
 			err = commandPWD(c)
 		case "STRU":
-			err = commandSTRU(c)
+			if len(cmds) != 2 || cmds[1] == "" {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			if cmds[1] != "FILE" && cmds[1] != "TYPE" && cmds[1] != "S" {
+				c.writeResponse("500 Syntax error, command unrecognized")
+				continue
+			}
+			c.stru = cmds[1]
+			c.writeResponse("200 Command okay.")
 		case "CWD":
 			if len(cmds) != 2 || cmds[1] == "" {
 				c.writeResponse("500 Syntax error, command unrecognized")
@@ -201,7 +225,7 @@ func handleConn(c *Client) {
 			err = commandCWD(c, cmds[1])
 		// LIST 一覧
 		case "LIST":
-			err = commandLIST(c)
+			err = commandLIST(c, fileType)
 		// NLST 名前一覧
 		case "NLST":
 			commanNLST(c)

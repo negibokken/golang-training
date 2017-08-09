@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -35,10 +36,32 @@ func commandRETR(c *Client, fileName, fileType string) (err error) {
 		return fmt.Errorf("%v", err)
 	}
 	c.writeResponse("150 File status okay; about to open data connection.")
-	if _, err := io.Copy(c.dconn, file); err != nil {
-		c.writeResponse("550 File not copied.")
-		log.Println("bbb", err)
-		return fmt.Errorf("%v", err)
+	// BINARY
+	if fileType == "I" {
+		if _, err := io.Copy(c.dconn, file); err != nil {
+			c.writeResponse("550 File not copied.")
+			log.Println("bbb", err)
+			return fmt.Errorf("%v", err)
+		}
+	} else {
+		r := bufio.NewReader(file)
+		w := bufio.NewWriter(c.dconn)
+		for {
+			line, isPrefix, err := r.ReadLine()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				log.Printf("cmd: RETR err:%v\n", err)
+				c.writeResponse("450 File unavailable.")
+				return err
+			}
+			w.Write(line)
+			if !isPrefix {
+				w.Write([]byte("\r\n"))
+			}
+		}
+		w.Flush()
 	}
 	c.dClose("RETR")
 	return nil
@@ -148,7 +171,7 @@ func commandABOR(c *Client) (err error) {
 }
 
 func commandDELE(c *Client, file string) (err error) {
-	if err = os.Remove(file); err != nil {
+	if err = os.Remove(path.Join(c.cwd, file)); err != nil {
 		c.writeResponse("550 Requested action not taken.")
 		return
 	}
@@ -179,10 +202,6 @@ func commandPWD(c *Client) (err error) {
 	return
 }
 
-func commandSTRU(c *Client) (err error) {
-	return
-}
-
 func commandCWD(c *Client, p string) (err error) {
 	// absolute path or relative path
 	if strings.HasPrefix(p, "/") {
@@ -204,7 +223,14 @@ func commandCWD(c *Client, p string) (err error) {
 	return
 }
 
-func commandLIST(c *Client) (err error) {
+func endLine(fileType string) string {
+	if fileType == "I" {
+		return "\r\n"
+	}
+	return "\n"
+}
+
+func commandLIST(c *Client, fileType string) (err error) {
 	c.dAccept()
 	c.writeResponse("150 File status okay; about to open data connection.")
 	files, err := ioutil.ReadDir(c.cwd)
@@ -213,11 +239,9 @@ func commandLIST(c *Client) (err error) {
 		return
 	}
 	var str string
-	for i, file := range files {
-		str += " " + file.Name()
-		if i%5 == 4 {
-			str += "\r\n"
-		}
+	for _, file := range files {
+		log.Println(fileType)
+		str += " " + file.Name() + endLine(fileType)
 	}
 	log.Println(str)
 	c.writeDResponse(str)
@@ -235,7 +259,7 @@ func commanNLST(c *Client) (err error) {
 	}
 	var str string
 	for i, file := range files {
-		str += " " + file.Name()
+		str += " " + file.Name() + "\n"
 		if i%5 == 4 {
 			str += "\r\n"
 		}
