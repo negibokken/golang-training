@@ -64,9 +64,9 @@ func main() {
 		close(cancel)
 	}()
 
-	timeout := time.Minute * 1
+	timeout := time.Second * 1
 	timer := time.AfterFunc(timeout, func() {
-		fmt.Println("1 minute, finished")
+		fmt.Println("1 second, finished")
 		close(cancel)
 	})
 

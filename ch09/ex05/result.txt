@@ -1,6 +1,6 @@
-pong start
 ping start
+pong start
 1 minute, finished
 finish
-ping sent 107871635 times struct{}.
-pong sent 107871635 times struct{}.
+ping sent 2313451 times struct{}.
+pong sent 2313451 times struct{}.
