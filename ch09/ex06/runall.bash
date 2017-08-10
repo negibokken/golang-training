@@ -1,4 +1,4 @@
 #! /bin/sh
 
 go build
-./ex06
+./ex06 > sample.png
