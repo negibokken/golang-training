@@ -65,5 +65,5 @@ func NewReader(f *os.File) (io.Reader, error) {
 }
 
 func init() {
-	archives.RegisterFormat("zip", "PK", 0, NewReader)
+	archives.RegisterFormat("zip", "PK\003\004", 0, NewReader)
 }
