@@ -232,22 +232,19 @@ func endLine(fileType string) string {
 func commandLIST(c *Client, filename, fileType string) (err error) {
 	c.dAccept()
 	c.writeResponse("150 File status okay; about to open data connection.")
-	if filename == "" {
-		files, err := ioutil.ReadDir(c.cwd)
-		if err != nil {
-			c.writeResponse("550 Requested action not taken.")
-			return err
-		}
-		var str string
-		for _, file := range files {
-			str += file.Name() + endLine(fileType)
-		}
-		log.Println(str)
-		c.writeDResponse(str)
-		c.dClose("LIST")
+	files, err := ioutil.ReadDir(c.cwd)
+	if err != nil {
+		c.writeResponse("550 Requested action not taken.")
 		return err
 	}
-	return
+	var str string
+	for _, file := range files {
+		str += file.Name() + endLine(fileType)
+	}
+	log.Println(str)
+	c.writeDResponse(str)
+	c.dClose("LIST")
+	return err
 	// -------------
 	// log.Println(fileType)
 	// file, err := os.Open(path.Join(c.cwd, filename))
