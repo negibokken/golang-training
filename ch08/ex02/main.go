@@ -127,6 +127,7 @@ func handleConn(c *Client) {
 				continue
 			}
 			err = commandPORT(c, ip, port)
+		// PASV mode
 		case "PASV":
 			commandPASV(c)
 		// STOR 保存
