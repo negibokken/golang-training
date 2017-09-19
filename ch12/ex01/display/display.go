@@ -1,7 +1,9 @@
 package display
 
-import "reflect"
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 // Display simple wrapper of display
 func Display(name string, x interface{}) {
@@ -24,7 +26,7 @@ func display(path string, v reflect.Value) {
 		}
 	case reflect.Map:
 		for _, key := range v.MapKeys() {
-			display(fmt.Sprintf("%s[%s]", path, formatAtom(key)), v.MapIndex(key))
+			display(fmt.Sprintf("%s[%s]", path, FormatAtom(key)), v.MapIndex(key))
 		}
 	case reflect.Ptr:
 		if v.IsNil() {
@@ -40,6 +42,6 @@ func display(path string, v reflect.Value) {
 			display(path+".value", v.Elem())
 		}
 	default:
-		fmt.Printf("%s = %s\n", path, formatAtom(v))
+		fmt.Printf("%s = %s\n", path, FormatAtom(v))
 	}
 }
