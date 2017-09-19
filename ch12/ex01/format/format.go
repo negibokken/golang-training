@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func formatAtom(v reflect.Value) string {
+func FormatAtom(v reflect.Value) string {
 	switch v.Kind() {
 	case reflect.Invalid:
 		return "invalid"
