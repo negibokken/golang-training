@@ -1,6 +1,8 @@
 package format
 
 import (
+	"bytes"
+	"fmt"
 	"reflect"
 	"strconv"
 )
@@ -21,5 +23,31 @@ func FormatAtom(v reflect.Value) string {
 		return v.Type().String() + " 0x" + strconv.FormatUint(uint64(v.Pointer()), 16)
 	default:
 		return v.Type().String() + " value"
+	}
+}
+
+func FormatMap(v reflect.Value) string {
+	switch v.Kind() {
+	case reflect.Struct:
+		b := &bytes.Buffer{}
+		b.WriteByte('{')
+		for i := 0; i < v.NumField(); i++ {
+			if i != 0 {
+				b.WriteString(", ")
+			}
+			fmt.Fprintf(b, "%s: %s", v.Type().Field(i).Name, FormatAtom(v.Field(i)))
+		}
+		b.WriteByte('}')
+		return b.String()
+	case reflect.Array:
+		b := &bytes.Buffer{}
+		b.WriteByte('{')
+		for i := 0; i < v.Len(); i++ {
+			b.WriteString(",")
+		}
+		b.WriteByte('}')
+		return b.String()
+	default:
+		return FormatAtom(v)
 	}
 }
