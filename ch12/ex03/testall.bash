@@ -1,5 +1,5 @@
 #! /bin/sh
 
-cd display
+cd sexpr
 go test -v -bench=.
 cd ..

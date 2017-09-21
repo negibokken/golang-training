@@ -7,7 +7,6 @@ import (
 	"reflect"
 )
 
-// Marshal encodes a Go value to json.
 func Marshal(v interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	if err := encode(&buf, reflect.ValueOf(v), 0); err != nil {
@@ -16,8 +15,6 @@ func Marshal(v interface{}) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-
-// encode writes to buf a json representation of v.
 func encode(buf *bytes.Buffer, v reflect.Value, indent int) error {
 	switch v.Kind() {
 	case reflect.Invalid:
