@@ -13,11 +13,6 @@ type Profile struct {
 }
 
 func main() {
-	// var structTest = []Profile{
-	// 	{name: "Alice", age: 20},
-	// 	{name: "Bob", age: 21},
-	// 	{name: "Charlie", age: 21},
-	// }
 	var structTest = Profile{name: "Alice", age: 20}
 	var out Profile
 	data, err := sexpr.Marshal(structTest)
