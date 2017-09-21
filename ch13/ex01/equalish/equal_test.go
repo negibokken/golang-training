@@ -29,24 +29,22 @@ func TestEqualish(t *testing.T) {
 		x, y interface{}
 		want bool
 	}{
-		// basic types
 		{0, 0, true},
-		{1000000000.9999, 1000000000.0, true}, // almost one part in a billion
-		{1000000001, 1000000000, false}, // one part in a billion
-		{uint(1000000011), uint(1000000011), true}, // almost one part in a billion
+		{1000000000.9999, 1000000000.0, true},
+		{1000000001, 1000000000, false},
+		{uint(1000000011), uint(1000000011), true},
 		{1, 1, true},
-		{1, 2, false},   // different values
-		{1, 1.0, false}, // different types
+		{1, 2, false},
+		{1, 1.0, false},
 		{"foo", "foo", true},
 		{"foo", "bar", false},
-		{mystring("foo"), "foo", false}, // different types
-		// slices
+		{mystring("foo"), "foo", false},
+
 		{[]string{"foo"}, []string{"foo"}, true},
 		{[]string{"foo"}, []string{"bar"}, false},
 		{[]string{}, []string(nil), true},
-		// slice cycles
+
 		{cycleSlice, cycleSlice, true},
-		// maps
 		{
 			map[string][]int{"foo": {1, 2, 3}},
 			map[string][]int{"foo": {1, 2, 3}},
@@ -62,27 +60,27 @@ func TestEqualish(t *testing.T) {
 			map[string][]int(nil),
 			true,
 		},
-		// pointers
+
 		{&one, &one, true},
 		{&one, &two, false},
 		{&one, &oneAgain, true},
 		{new(bytes.Buffer), new(bytes.Buffer), true},
-		// pointer cycles
+
 		{cyclePtr1, cyclePtr1, true},
 		{cyclePtr2, cyclePtr2, true},
-		{cyclePtr1, cyclePtr2, true}, // they're deeply equal
-		// functions
+		{cyclePtr1, cyclePtr2, true},
+
 		{(func())(nil), (func())(nil), true},
 		{(func())(nil), func() {}, false},
 		{func() {}, func() {}, false},
-		// arrays
+
 		{[...]int{1, 2, 3}, [...]int{1, 2, 3}, true},
 		{[...]int{1, 2, 3}, [...]int{1, 2, 4}, false},
-		// channels
+
 		{ch1, ch1, true},
 		{ch1, ch2, false},
-		{ch1ro, ch1, false}, // NOTE: not equal
-		// interfaces
+		{ch1ro, ch1, false},
+
 		{&iface1, &iface1, true},
 		{&iface1, &iface2, false},
 		{&iface1Again, &iface1, true},
