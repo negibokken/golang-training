@@ -1,4 +1,3 @@
-// ex12.5 is a codec for json.
 package json
 
 import (

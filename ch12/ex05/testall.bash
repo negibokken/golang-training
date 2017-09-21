@@ -1,5 +1,5 @@
 #!/bin/sh
 
-cd jencoder
+cd json
 go test -v -bench=.
 cd ..
