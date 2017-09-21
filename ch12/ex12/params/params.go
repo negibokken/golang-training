@@ -1,5 +1,3 @@
-// ex12.12 provides a URL query parameter codec with validation triggered by
-// struct tags.
 package params
 
 import (
@@ -12,26 +10,44 @@ import (
 
 type Check func(v interface{}) error
 
-// Unpack populates the fields of the struct pointed to by ptr
-// from the HTTP request parameters in req.
+func parseTag(tag string) (key string, value string) {
+	splited := strings.Split(tag, ":")
+	if len(splited) != 2 {
+		return
+	}
+	key = splited[0]
+	value = splited[1]
+	return
+}
+
 func Unpack(req *http.Request, ptr interface{}, checks map[string]Check) error {
 	if err := req.ParseForm(); err != nil {
 		return err
 	}
 
-	// Build map of fields keyed by effective name.
 	fields := make(map[string]reflect.Value)
-	v := reflect.ValueOf(ptr).Elem() // the struct variable
+	v := reflect.ValueOf(ptr).Elem()
 	for i := 0; i < v.NumField(); i++ {
-		fieldInfo := v.Type().Field(i) // a reflect.StructField
-		tag := fieldInfo.Tag           // a reflect.StructTag
-		name := tag.Get("http")
+		fieldInfo := v.Type().Field(i)
+		tag := fieldInfo.Tag
+		splited := strings.Split(string(tag), ",")
+		key, value := parseTag(splited[0])
+		if key != "http" {
+			break
+		}
+		name := value
 		if name == "" {
 			name = strings.ToLower(fieldInfo.Name)
 		}
-		checkName := tag.Get("check")
+
+		key, value = parseTag(splited[1])
+		if key != "check" {
+			break
+		}
+		checkName := value
 		if checkName != "" {
 			if check, ok := checks[checkName]; ok {
+				fmt.Println(v.Field(i).Interface())
 				err := check(v.Field(i).Interface())
 				if err != nil {
 					return err
@@ -41,11 +57,10 @@ func Unpack(req *http.Request, ptr interface{}, checks map[string]Check) error {
 		fields[name] = v.Field(i)
 	}
 
-	// Update struct field for each parameter in the request.
 	for name, values := range req.Form {
 		f := fields[name]
 		if !f.IsValid() {
-			continue // ignore unrecognized HTTP parameters
+			continue
 		}
 		for _, value := range values {
 			if f.Kind() == reflect.Slice {

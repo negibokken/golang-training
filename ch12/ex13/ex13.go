@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"reflect"
 
-	"github.com/negibokken/golang-training/ch12/ex10/sexpr"
+	"github.com/negibokken/golang-training/ch12/ex13/sexpr"
 )
 
 func main() {
@@ -15,10 +16,13 @@ func main() {
 		F64  float64
 		C64  complex64
 		C128 complex128
-		I    Interface
+		I    Interface `sexpr:"face"`
 	}
+	sexpr.Interfaces["sexpr.Interface"] = reflect.TypeOf(int(0))
+	input := `((B t) (F32 2.5) (F64 0) (I ("sexpr.Interface" 5)))`
+
 	var r Record
-	err := sexpr.Unmarshal([]byte(`((B t) (F32 2.5) (F64 0) (I nil))`), &r)
+	err := sexpr.Unmarshal([]byte(input), &r)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
