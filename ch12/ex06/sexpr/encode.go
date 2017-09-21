@@ -1,4 +1,3 @@
-// ex12.6 is an s-expression codec that doesn't encode zero values.
 package sexpr
 
 import (
@@ -7,7 +6,6 @@ import (
 	"reflect"
 )
 
-// Marshal encodes a Go value in S-expression form.
 func Marshal(v interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	if err := encode(&buf, reflect.ValueOf(v), 0); err != nil {
@@ -16,8 +14,6 @@ func Marshal(v interface{}) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-
-// encode writes to buf an S-expression representation of v.
 func encode(buf *bytes.Buffer, v reflect.Value, indent int) error {
 	switch v.Kind() {
 	case reflect.Invalid:
