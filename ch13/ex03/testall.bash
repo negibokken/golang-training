@@ -1,5 +1,5 @@
 #!/bin/sh
 
-cd bzip2
+cd bzip
 go test -v -bench=.
 cd ..

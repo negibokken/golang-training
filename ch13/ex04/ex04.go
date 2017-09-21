@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"log"
+	"os"
+
+	"github.com/negibokken/golang-training/ch13/ex04/bzip"
+)
 
 func main() {
-	fmt.Println("vim-go")
+	w, err := bzip.NewWriter(os.Stdout)
+	if err != nil {
+		log.Println("hello1")
+		log.Fatalf("bzipper: %v\n", err)
+	}
+	if err := w.Close(); err != nil {
+		log.Println("hello")
+		log.Fatalf("bzipper: close: %v\n", err)
+	}
 }
