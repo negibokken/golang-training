@@ -1,3 +1,3 @@
 #! /bin/sh
 go build
-./ex03
+cat test.txt | ./ex03 > out.bz2
